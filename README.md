@@ -1,2 +1,2 @@
 # lendingSystem
-System built in java to handle customer loan transactions
+System built in Python to handle customer loan transactions
