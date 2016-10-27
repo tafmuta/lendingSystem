@@ -10,12 +10,9 @@ from loanOfficer import loanOfficer
 
 class Customer():
 
-    def __init__(self, name, custId):
+    def __init__(self, name=None, custId=None):
         self.cust_Id = custId
         self.Customer_Name = name
-        self.loan = Loan()
-        self.officer = loanOfficer()
-        self.Score= officer.get_Score()
         self.loan = Loan()
         self.officer = loanOfficer()
 
@@ -36,7 +33,7 @@ class Customer():
     def Borrow(self, Amount, Duration):
         try:
             # requesting for a loan
-            self.loan.Request(Amount, Duration, self.get_custDetails(), self.Score)
+            self.loan.Request(Amount, Duration, self.get_custDetails(), self.officer.get_Score())
         except(ValueError):             # Loan.Request function raises and error in case it cant process the lona
             print("Cannot process your loan request at the moment ")
         finally:
