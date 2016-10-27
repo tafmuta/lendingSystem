@@ -10,19 +10,14 @@ from loanOfficer import loanOfficer
 
 class Customer():
 
-    # constructor to called when the customer is created without parameters
-    def Customer(self):
-        self.loan = Loan()
-        self.officer = loanOfficer()
-
-    # Overloaded constructor to set the customer details if the customer is initiated with parameters
-
-    def Customer(self, name,custId):
+    def __init__(self, name, custId):
         self.cust_Id = custId
         self.Customer_Name = name
         self.loan = Loan()
         self.officer = loanOfficer()
         self.Score= officer.get_Score()
+        self.loan = Loan()
+        self.officer = loanOfficer()
 
     # Registers the customers and calls the loan Officer to verify the customer details
     def Register(self, name, Id_Num, Address, Occupation):
