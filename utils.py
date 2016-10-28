@@ -4,10 +4,10 @@
 
 
 def generate_CustomerId():
-    # generate a 6 figure random number
-    # Look up in the database if the account number exists
-    # If it doesnt assign it to the variable id
-    # else repeat the procces again
+    # TODO generate a 6 figure random number
+    # TODO Look up in the database if the account number exists
+    # TODO If it doesnt assign it to the variable id
+    # TODO else repeat the procces again
     return id
 
 def loan_Id():

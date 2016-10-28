@@ -3,6 +3,7 @@
 # Loans Have a period weekly, monthly, yearly
 # can be disbursed through various channels of customer's preference
 
+from Models import *
 
 class Loan():
 

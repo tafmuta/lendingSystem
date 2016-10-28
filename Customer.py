@@ -7,6 +7,7 @@
 
 from Loan import Loan
 from loanOfficer import loanOfficer
+from Models import *
 
 class Customer():
 
@@ -17,19 +18,14 @@ class Customer():
         self.officer = loanOfficer()
 
     # Registers the customers and calls the loan Officer to verify the customer details
-    def Register(self, name, Id_Num, Address, Occupation):
+    def Register(self, name, Id_Num, Address):
         self.Customer_Name = name                         # customer name
         self.Id_Number = Id_Num                           # Customer's national Id number
         self.Address = Address                            # Customer's physical address
-        self.Occupation = Occupation                      # Customer's occupation
-        try:
-            # set the customer's loan score
-            self.Score = self.officer.Verify(self.Customer_Name, self.Id_Number, self.Address,self.Occupation)
-        except:
-            return ("Unable to complete registration")
+        self.officer.Verify(self.Customer_Name, self.Id_Number, self.Address)
+
 
     # asks for a loan
-
     def Borrow(self, Amount, Duration):
         try:
             # requesting for a loan
