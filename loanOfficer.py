@@ -4,23 +4,49 @@
 # He also scores customers
 # Interface.py
 from Models import *
-from Customer import *
-from Loan import *
+import controller
+import utils
+from peewee import *
 
-from Models import *
 
 class loanOfficer():
     def __init__(self):
         before_request_handler()        # connect to the db
 
-    def get_Score(self):
-        pass
+    def score_Customer(self, usr_id, score):
+        usr = Customer.select().where(Customer.Customer_Id == usr_id)
+        usr.Score = score
+        usr.save()
 
-    def Verify(self, Nme, Id_num, Add):
+    # TODO test this logic
+    def get_Score(self, usr_id):
+        return Customer.get_id()
+
+    def Create_usr(self, Nme, Id_num, Add):
         try:
             with db.atomic():
-                return Customer.create(National_id=id_num, Name = Name, Address = Add)
-        except peewee.IntegrityError:
-            # `national_id` is a unique column, so a user with this ID number exists already exists,
+                usr_id = utils.generate_CustomerId(Nme)
+                cust = Customer.create(
+                    National_id=Id_num, Name=Nme, Address=Add, )
+                cust.Customer_Id = usr_id
+                cust.save()
+                return cust
+        except IntegrityError:
+            # `national_id` is a unique column, so a user with
+            # this ID number exists already exists,
             # making it safe to call .get().
-            return User.get(User.username == username)
+            return Customer.select().where(Customer.National_id == id_num)
+
+    def pay_Loan(self, Amount, loan_id):
+        usr = Loan.select().join(Customer).where(loan_Id=loan_id)
+        controller.Pay(Amount=Amount, loan=usr)
+
+    def request_loan(customerid, ):
+        try:
+            usr = Loan.select().join(Customer).\
+                where(Customer.Customer_Id == customerid)
+            return ("Please pay your outstanding \
+                balance to be able to borrow!")
+        except:
+            usr = Loan.create(customer = Customer.select().where(Customer_Id = customerid))
+            controller.Request(loan=usr, )

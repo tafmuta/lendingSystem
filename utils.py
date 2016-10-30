@@ -2,17 +2,10 @@
 # utils.py - contains functions to perform various utility functions
 # generate customer Id
 
+from uuid import UUID
 
-def generate_CustomerId():
-    # TODO generate a 6 figure random number
-    # TODO Look up in the database if the account number exists
-    # TODO If it doesnt assign it to the variable id
-    # TODO else repeat the procces again
-    return id
-
-def loan_Id():
-    # generate a 6 figure random number
-    # Look up in the database if the loan id exists
-    # If it doesnt assign it to the variable id
-    # else repeat the procces again
-    return id
+def generate_CustomerId(usr_name):
+    id = UUID(NAMESPACE_DNS, usr_name)
+    encrypted_id = id.bytes             # stored in the data base
+    usr_ID = int(id.time_low)
+    return usr_ID
