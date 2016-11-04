@@ -2,6 +2,7 @@
 # handles borrowing
 import uuid
 from datetime import datetime
+from datetime import timedelta
 import getopt
 # TODO registrations
 
@@ -17,27 +18,12 @@ def Pay(self, Amount, loan):
         loan.save()
 
 
-def Request(self, loan, month=0, days=0, year=0, weeks=0):
-    # check if the customer's score is okay
-    if not loan.customer.Score >= 0.5:
-        return "Inadequate score to take a loan"
-    # TODO update the deadline and loan_Id
-    else:
-        loan.Amount += loan
-        today = datetime.now()
-        fMonth = today.month + month
-        fday = today.day + days
-        fyear = today.year + year
-        ndate = datetime.date()
-        loan.Deadline = nDate
-        id = uuid.uuid1()
-        loan.loan_Id = id.bytes()
-        loan.save()
-        print("Confirmed\n Your loan id is: %d", id.time_low)
+def Request(self, loan, duration, loan_amount):
+    loan.Amount += loan
+    deadline = datetime.now()+timedelta(days=duration)
+    loan.Deadline = deadline
+    id = uuid.uuid1()             # use the uuid module to get an unique loan id
+    loan.loan_Id = id.bytes()     # store the loan in the database in bytes
+    loan.save()
+    print("Confirmed\n Your loan id is: %d", id.time_low)     # display the created loan id to the customer
 
-
-def main(args):
-    # TODO register customer
-    # TODO ask for a loan
-    # TODO pay loan
-    # TODO get a list of loans

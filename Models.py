@@ -1,6 +1,6 @@
 from peewee import *
 import uuid
-from _datetime import datetime
+from datetime import datetime
 from playhouse.sqlite_ext import SqliteExtDatabase
 
 # define my databse
@@ -28,8 +28,8 @@ class Customer(baseModel):
     Name = CharField(default='Your name')
     Address = CharField(default='Address')
     National_id = IntegerField(default=00000000)
-    Customer_Id = UUIDField(unique=True, primary_key=True)
-    Score = IntegerField(default=0.5)
+    Customer_Id = CharField(unique=True, primary_key=True)
+    Score = IntegerField(default=0)
 
 
 class Loan(baseModel):
@@ -39,10 +39,13 @@ class Loan(baseModel):
     loan_Id = UUIDField(unique=True, primary_key=True)
     paid = BooleanField()
 
+class Officer(baseModel):
+    id = CharField(default="Admin")
+    password = CharField(default="password")
 
 def before_request_handler():
     db.connect()
-    db.create_tables([Loan, Customer], safe=True)
+    db.create_tables([Loan, Customer, Officer], safe=True)
 
 
 def after_request_handler():
