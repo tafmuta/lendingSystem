@@ -3,23 +3,23 @@ System built in Python to handle customer loan transactions
 comaptible with python 2.* and previous versions
 
 usage:
-main.py [command] [option(s)]
+main.py [command] [option(s)]</br>
 commands        options
---admin -a      [loan officer's user name]                login to the system as an adiministrator
+--admin -a      [loan officer's user name]                login to the system as an adiministrator </br>
 
---customer -c                                              login as a customer
+--customer -c                                              login as a customer</br>
 
-setup:
-in the terminal:
-run $ pip install -r requirements.txt
-open a new terminal
-run $ python utils.py    - this starts the message receiver
-on another terminal
-run $ python main.py [command] [option]
+setup:<br>
+in the terminal:<br>
+run $ pip install -r requirements.txt<br>
+open a new terminal<br>
+run $ python utils.py    - this starts the message receiver<br>
+on another terminal<br>
+run $ python main.py [command] [option]<br>
 
-assumptions:
-The user has python 2.* or any previous version installed in the system if not downloand it at www.python.org/downloads
+assumptions:<br>
+The user has python 2.* or any previous version installed in the system if not downloand it at www.python.org/<br>
 
-defaultpasswords for admin are:
-id = Admin
-password = password
+default passwords for admin are:<br>
+id = Admin<br>
+password = password<br>
