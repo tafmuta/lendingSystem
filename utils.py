@@ -1,14 +1,14 @@
 #! C:\Python35
 # utils.py - contains functions to perform various utility functions
 # generate customer Id
-import pika
+import re
+import time
 from uuid import *
-from datetime import datetime
 
-def unix_time(dt):
-    epoch = datetime.datetime.utcfromtimestamp(0)
-    delta = dt - epoch
-    return delta.total_seconds()
+import pika
+
+from Models import *
+
 
 def generate_customerid(usr_name):
     id = uuid3(NAMESPACE_DNS, usr_name)
@@ -37,7 +37,11 @@ def emit(message, routing_key):
 
 # recieve messages
 def recieve():
-    binding_keys = ['Mpesa', 'AirtelMoney']
+    binding_keys = ('Mpesa',  # Mpesa channel
+                    'AirtelMoney',  # Airtel Money Channel
+                    '#',  # bulk sms
+                    '#.loan.reminder'  # loan reminder channel
+                    )
     connection = pika.BlockingConnection(
         pika.ConnectionParameters('localhost'))
 
@@ -53,7 +57,16 @@ def recieve():
                            queue=queue_name, routing_key=binding_key)
 
     def callback(ch, method, properties, body):
-        print ("[*] %r" % body, method)
+        nums = int("".join(re.findall("\d+", body)))
+        messg = "".join(re.findall("[A-Za-z!@#$%^^&*() ]", body))
+        if nums:
+            time.sleep(nums)
+            try:
+                Loan.get(Paid=False)
+                return ("[*] %r" % method.routing_key, messg)
+            except:
+                pass
+        return ("[*] %r" % method.routing_key, messg)
 
     channel.basic_qos(prefetch_count=1)
     channel.basic_consume(callback,
@@ -63,38 +76,6 @@ def recieve():
     print('[*] Waiting for messages. To exit press CTRL+C')
     channel.start_consuming()
 
-# initialise a reminder messages
-def reminder(queue_name):
-    connection = pika.BlockingConnection(pika.ConnectionParameters(
-        host='localhost'))
-    channel = connection.channel()
 
-    channel.queue_declare(queue=queue_name, durable=True)
-    message = "Dear customer please repay your loan to continue enjoying our services!"
-    channel.basic_publish(exchange='',
-                          routing_key=queue_name,
-                          body=message,
-                          properties=pika.BasicProperties(
-                              delivery_mode=2,  # make message persistent
-                          ))
-    print(" [x] Sent %r" % message)
-    connection.close()
-
-# recieve a reminder message and schedule its execution
-def receive_remider(duration, queue_name):
-    connection = pika.BlockingConnection(pika.ConnectionParameters(
-        host='localhost'))
-    channel = connection.channel()
-
-    channel.queue_declare(queue=queue_name, durable=True)
-
-    def callback(ch, method, properties, body):
-        time.sleep(duration)
-        print(" %r " % body)        # return the message sent when deadline reaches
-        ch.basic_ack(delivery_tag=method.delivery_tag)
-
-    channel.basic_qos(prefetch_count=1)
-    channel.basic_consume(callback,
-                          queue=queue_name)
-
-    channel.start_consuming()
+if __name__ == '__main__':
+    recieve()
