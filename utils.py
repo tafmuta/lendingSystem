@@ -3,7 +3,6 @@
 # generate customer Id
 import re
 import time
-from uuid import *
 
 import pika
 
@@ -31,7 +30,7 @@ def emit(message, routing_key):
                           body=message,
                           )
 
-    print("[x] sent %r" % message)
+    print("[x] Message added to queue: %s" % routing_key)
 
     connection.close()
 

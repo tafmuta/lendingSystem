@@ -2,11 +2,9 @@
 #  loanOfficer.py - loanOfficer class
 #  A loanOfficer manages customer registration (updates the db)
 #  He also scores customers
-import re
 from datetime import *
 
-from peewee import *
-
+from Models import *
 from utils import *
 
 
@@ -15,35 +13,49 @@ class loanOfficer():
 
     def __init__(self, usr=None):
         try:
-            self.login(usr=usr)
-            Officer.get(Officer.password == self.passw)
-            Officer.get(Officer.id == self.id)
-            print "Login succesful!"
+            self.create_admin(usr_name="Admin", passw="password")
         except:
-            raise ValueError("Invalid login details!")
+            usr = raw_input("Enter your id: ")
+            passw = raw_input("Enter your password: ")
+            self.login(usr=usr, passw=passw)
+
 
         # self.login()
 
     def score_Customer(self, usr_id=None, score=None):  # Enables the loan officer score the customers
-        usr_id = raw_input("Enter customer id: ")
+        usr_id = raw_input("Enter customer's National id Number: ")
+        try:
+            usr = Customer.get(Customer.National_id == usr_id)
+        except:
+            after_request_handler()
+            print "Please provide a valid customer's national id!"
+            sys.exit(1)
         score = int(raw_input("Enter customer's score: "))
-        usr = Customer.get(Customer.Customer_Id == usr_id)
         usr.Score = score
+        print "Operation succesful!"
         usr.save()
 
     def list_unscored_customers(self): # lists all unscored customers
         cust_records = Customer.select()
+        print "Name\t National id\t Score\t \n"
         for cust in cust_records:
-            print cust.Name,cust.Customer_Id,cust.Score
+            print "%s\t %d\t\t %d" % (cust.Name, cust.National_id, cust.Score)
 
-    def login(self, usr=None):  # handles login for the loan officer
+    def login(self, usr=None, passw=None):  # handles login for the loan officer
         self.id = usr
-        self.passw = raw_input("Enter your password: ")
+        self.passw = passw
+        try:
+            Officer.get(id=usr, password=passw)
+        except:
+            after_request_handler()
+            return "Invalid login details"
 
-    def create_admin(self):  # creates a new system administrator
-        usr_nme = raw_input("Enter username: ")
-        passw = raw_input("Enter password: ")
-        Officer.create_or_get(id=usr_nme, password=passw)
+    def create_admin(self, usr_name=None, passw=None):  # creates a new system administrator
+        if not usr_name and not passw:
+            usr_nme = raw_input("Enter a username: ")
+            passw = raw_input("Enter a password: ")
+        Officer.create(id=usr_nme, password=passw)
+
 
     def send_bulk(self):  # Sending bulk sms
         message = raw_input("Enter message: ")
@@ -62,30 +74,33 @@ def Create_usr(Nme=None, Id_num=None, Add=None):  # creates a new customer
     Add = raw_input("Enter your address: ")
     try:  # try creating the user
         with db.atomic():
-            encrypted_id, usr_id = generate_customerid(Nme)
-            Customer.create(Customer_Id=usr_id, National_id=Id_num, Name=Nme, Address=Add, )
-            return "Your id is %d" % usr_id
+            encrypted_id, usr_id = generate_customerid(str(Id_num))
+            return Customer.create(Customer_Id=encrypted_id, National_id=Id_num, Name=Nme, Address=Add)
     except IntegrityError as e:  # except if a user with the same national id already exists
         # `national_id` is a unique column, so a user with
         # this ID number exists already exists,
         # making it safe to call .get().
-        return e.__repr__()
+        print "A customer with the same ID number exists. Try loging in instead"
 
 
 def request_loan():  # allows customer to ask for a loan
-    try:
-        # get customer's details
-        cust_id = raw_input("Enter your customer id ").strip(" ")
-        amount = int(raw_input("Enter amount you wish to borrow: "))
-        duration = raw_input(
-            "Enter duration of the loan(number followed by type e.g 2 weeks): ").strip(" ")
-        channel = raw_input(
-            "Enter channel for loan disbursment(Mpesa or Airtel Money): ")
-        myCust = Customer.get(Customer.Customer_Id == cust_id)
-        name = myCust.Name
 
+        # get customer's details
+        cust_id = raw_input("Enter your national ID number ").strip(" ")
+        try:
+            myCust = Customer.get(Customer.National_id == cust_id)
+        except:
+            after_request_handler()
+            return "Please ensure you are registered before asking for a loan"
+
+        name = myCust.Name
+        amount = int(raw_input("Enter amount you wish to borrow: "))
         # check if customer's score is enough to take the specified loan
-        if Customer.select(Customer.Score).where(Customer.Customer_Id == cust_id) >= amount:
+        if myCust.Score >= amount:
+            duration = raw_input(
+                "Enter duration of the loan(number followed by type e.g 2 weeks): ").strip(" ")
+            channel = raw_input(
+                "Enter channel for loan disbursment(Mpesa or Airtel Money): ")
             # create an mpesa channel
             if channel.lower() == "mpesa":
                 message = "%s %d via Mpesa" % (name, amount)
@@ -105,9 +120,9 @@ def request_loan():  # allows customer to ask for a loan
                 days *= 365
 
             # generate the loan id
-            id = int(uuid.uuid1().time_low)
+            id = uuid1()
             deadline = datetime.now() + timedelta(days=int(days))
-            Loan.create(loan_Id=id, customer=Customer.get(Customer.Customer_Id == cust_id), Amount=amount,
+            Loan.create(loan_Id=id, customer=Customer.get(Customer.National_id == cust_id), Amount=amount,
                         paid=False, Deadline=deadline)
             # set a reminder and add it to queue to remind customer when payement date reaches
             secondsToDeadline = days * 24 * 60 * 60
@@ -116,7 +131,4 @@ def request_loan():  # allows customer to ask for a loan
             emit(message=message, routing_key=keys)
         else:
             # customer doesnt have enough score to take a loan
-            return "Inadequate score to take a loan"
-        # message
-    except:
-        return "Sorry we can not complete your loan requests at the moment"
+            print "Inadequate score to take a loan"

@@ -2,80 +2,60 @@
 # main.py - driver for the lending system
 
 import getopt
-import sys
 
-from Models import *
 from loanOfficer import *
 
 
 def main(argv):
-    if len(argv) < 2:
+    if len(sys.argv) <= 1:
         print """usage: main.py [command] [option(s)]
-               commands        options
-               --admin -a      [loan officer's user name]                login to the system as an adiministrator
-               --customer -c   N/A                                       login as a customer """
-        sys.exit()
+                commands        options
+                --admin -a      N/A               login to the system as an adiministrator
+                --customer -c   N/A"""
     try:
-        opts, args = getopt.getopt(argv, "a:c", ["admin=", "customer="])
+        opts, args = getopt.getopt(argv, "ca", ["admin", "customer"])
     except getopt.GetoptError:
         print """usage: main.py [command] [option(s)]
         commands        options
         --admin -a      [loan officer's user name]                login to the system as an adiministrator
         --customer -c   N/A                                       login as a customer """
     for opt, arg in opts:
-        if opt in ("--admin", "-a"):
-            before_request_handler()  # initialise db connection
-            officer = loanOfficer(arg)
-            choice = raw_input("press:\n"
-                               "1. To score customer\n"
-                               "2. To view customers details\n"
-                               "3. To create a new admin\n"
-                               "4. To logout"
-                               )
+        if opt.lower() in ("--admin", "-a"):
+            officer = loanOfficer()
+            choice = raw_input("What do you want to do? press CTRL+D to exit\n"
+                               "1. Score customer\n"
+                               "2. View customers details\n"
+                               "3. Create a new admin\n"
+                               "4. Logout\n"
+                               "Continue with 1, 2, 3, 4: ")
             if choice == "1":
-                try:
-                    officer.score_Customer()
-                except:
-                    print "Request unsuccesful"
-                finally:
-                    logout()
+                officer.score_Customer()
+                logout()
             elif choice == "2":
-                try:
-                    officer.list_unscored_customers()
-                except:
-                    print "Request unsuccesfull"
-                finally:
-                    logout()
+                officer.list_unscored_customers()
+                logout()
             elif choice == "3":
                 try:
                     officer.create_admin()
-                except:
-                    print "Request unsuccesfull"
-                finally:
                     logout()
+                except:
+                    after_request_handler()
+                    return "User with a similar username exists!"
             else:
                 return logout()
-        elif opt in ("--customer", "-c"):
-            before_request_handler()  # initialise db connection
-            choice = raw_input("Enter:\n"
-                               "1. To request loan\n"
-                               "2. To create an account\n"
-                               "3. To quit\n"
+        elif opt.lower() in ("-c"):
+            choice = raw_input("What do you want to do? Press CTRL+D to exit\n"
+                               "1. Request loan\n"
+                               "2. Create an account\n"
+                               "3. Quit\n"
+                               "Continue with 1, 2 or 3: "
                                )
             if choice == "1":
-                try:
-                    request_loan()
-                except:
-                    print "Request unsuccesfull"
-                finally:
-                    logout()
+                request_loan()
+                logout()
             elif choice == "2":
-                try:
-                    Create_usr()
-                except:
-                    print "Request unsuccesfull"
-                finally:
-                    logout()
+                Create_usr()
+                logout()
             else:
                 logout()
             after_request_handler()  # close db connection
@@ -83,10 +63,11 @@ def main(argv):
 
 
 def logout():
-    time.sleep(5)
+    time.sleep(1)
     after_request_handler()
     sys.exit("Logged out")
 
 
 if __name__ == "__main__":
+    before_request_handler()  # initialise db connection
     main(sys.argv[1:])
