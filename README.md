@@ -5,7 +5,7 @@ comaptible with python 2.* and previous versions<br>
 usage:<br>
 main.py [command] <br>
 <br>
-[commands]
+[commands]<br>
 --admin -a                login to the system as an adiministrator<br>
 <br>
 --customer -c             login as a customer<br>
